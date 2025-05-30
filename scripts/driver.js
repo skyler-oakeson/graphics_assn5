@@ -38,19 +38,47 @@ MySample.main = (function() {
     }
 
     // Triangle vertex positions (X, Y, Z)
-    const vertices = new Float32Array([
-        0.0, 0.5, 0.0,
-        0.5, -0.5, 0.0,
-        -0.5, -0.5, 0.0
+    var vertices = new Float32Array([
+        -1, -1, -1,
+        1, -1, -1,
+        1, 1, -1,
+        -1, 1, -1,
+        -1, -1, 1,
+        1, -1, 1,
+        1, 1, 1,
+        -1, 1, 1,
+        -1, -1, -1,
+        -1, 1, -1,
+        -1, 1, 1,
+        -1, -1, 1,
+        1, -1, -1,
+        1, 1, -1,
+        1, 1, 1,
+        1, -1, 1,
+        -1, -1, -1,
+        -1, -1, 1,
+        1, -1, 1,
+        1, -1, -1,
+        -1, 1, -1,
+        -1, 1, 1,
+        1, 1, 1,
+        1, 1, -1,
     ]);
 
-    const indices = new Uint16Array([0, 2, 1])
+    var colors = new Float32Array([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ]);
 
-    const colors = new Float32Array([
-        1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 0.0, 1.0
-    ])
+    var indices = new Uint16Array([
+        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7,
+        8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15,
+        16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
+    ]);
 
     const vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -70,26 +98,10 @@ MySample.main = (function() {
 
     async function initializeShaders() {
         try {
-            // const vertexShaderSrc = await loadFileFromServer("../shaders/simple.vert");
-
-            const vertexShaderSrc = `#version 300 es
-                in vec2 a_position;
-                in vec4 a_color;
-                out vec4 v_color;
-                void main() {
-                    gl_Position = vec4(a_position, 0.0, 1.0);
-                    v_color = a_color;
-                }`
+            const vertexShaderSrc = await loadFileFromServer("/assets/shaders/simple.vert");
             const vertexShader = createShader(gl.VERTEX_SHADER, vertexShaderSrc);
 
-            // const fragmentShaderSrc = await loadFileFromServer("../shaders/simple.frag")
-            const fragmentShaderSrc = `#version 300 es
-                precision lowp float;
-                in vec4 v_color;
-                out vec4 out_color;
-                void main() {
-                    out_color = v_color;  // Red
-                }`
+            const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
             const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentShaderSrc);
 
             const program = createProgram(vertexShader, fragmentShader);
