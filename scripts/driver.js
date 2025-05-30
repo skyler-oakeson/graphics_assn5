@@ -37,32 +37,39 @@ MySample.main = (function() {
         return program;
     }
 
+    function createBuffer(type, data, usage) {
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(type, buffer);
+        gl.bufferData(type, data, usage)
+        return buffer
+    }
+
     // Triangle vertex positions (X, Y, Z)
     var vertices = new Float32Array([
-        -1, -1, -1,
-        1, -1, -1,
-        1, 1, -1,
-        -1, 1, -1,
-        -1, -1, 1,
-        1, -1, 1,
-        1, 1, 1,
-        -1, 1, 1,
-        -1, -1, -1,
-        -1, 1, -1,
-        -1, 1, 1,
-        -1, -1, 1,
-        1, -1, -1,
-        1, 1, -1,
-        1, 1, 1,
-        1, -1, 1,
-        -1, -1, -1,
-        -1, -1, 1,
-        1, -1, 1,
-        1, -1, -1,
-        -1, 1, -1,
-        -1, 1, 1,
-        1, 1, 1,
-        1, 1, -1,
+        -1, -1, -1, 1,
+        1, -1, -1, 1,
+        1, 1, -1, 1,
+        -1, 1, -1, 1,
+        -1, -1, 1, 1,
+        1, -1, 1, 1,
+        1, 1, 1, 1,
+        -1, 1, 1, 1,
+        -1, -1, -1, 1,
+        -1, 1, -1, 1,
+        -1, 1, 1, 1,
+        -1, -1, 1, 1,
+        1, -1, -1, 1,
+        1, 1, -1, 1,
+        1, 1, 1, 1,
+        1, -1, 1, 1,
+        -1, -1, -1, 1,
+        -1, -1, 1, 1,
+        1, -1, 1, 1,
+        1, -1, -1, 1,
+        -1, 1, -1, 1,
+        -1, 1, 1, 1,
+        1, 1, 1, 1,
+        1, 1, -1, 1,
     ]);
 
     var colors = new Float32Array([
@@ -75,25 +82,15 @@ MySample.main = (function() {
     ]);
 
     var indices = new Uint16Array([
-        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7,
-        8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15,
-        16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
+        0, 1, 2, 0, 2, 3,
+        4, 5, 6, 4, 6, 7,
+        8, 9, 10, 8, 10, 11,
+        12, 13, 14, 12, 14, 15,
+        16, 17, 18, 16, 18, 19,
+        20, 21, 22, 20, 22, 23
     ]);
 
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 
     async function initializeShaders() {
@@ -106,21 +103,32 @@ MySample.main = (function() {
 
             const program = createProgram(vertexShader, fragmentShader);
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-            let position = gl.getAttribLocation(program, 'a_position');
-            gl.enableVertexAttribArray(position);
-            gl.vertexAttribPointer(position, 3, gl.FLOAT, false, vertices.BYTES_PER_ELEMENT * 3, 0)
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-            let color = gl.getAttribLocation(program, 'a_color');
-            gl.enableVertexAttribArray(color);
-            gl.vertexAttribPointer(color, 3, gl.FLOAT, false, colors.BYTES_PER_ELEMENT * 3, 0)
+            let vertexBuffer = createBuffer(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
+            let positionLoc = getAndEnableVertexAttribArrayLocation(program, 'a_position')
+            gl.vertexAttribPointer(positionLoc, 4, gl.FLOAT, false, vertices.BYTES_PER_ELEMENT * 4, 0)
+
+            let colorsBuffer = createBuffer(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
+            let colorLoc = getAndEnableVertexAttribArrayLocation(program, 'a_color')
+            gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, colors.BYTES_PER_ELEMENT * 3, 0)
+
+            let indexBuffer = createBuffer(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW)
 
             gl.useProgram(program);
 
         } catch (error) {
             console.error(`${error.name}: ${error.message}`)
         }
+    }
+
+    function getAndEnableVertexAttribArrayLocation(program, name) {
+        let location = gl.getAttribLocation(program, name);
+        if (location < 0) {
+            console.error(`Failed to get attrib location for ${name}`)
+        }
+        gl.enableVertexAttribArray(location);
+
+        return location
     }
 
 
@@ -149,7 +157,6 @@ MySample.main = (function() {
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
     }
 
