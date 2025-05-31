@@ -40,36 +40,30 @@ function initBuffers(gl, vertices, colors, indices) {
     }
 }
 
-async function initProgram(gl) {
-    try {
-        const vertexShaderSrc = await loadFileFromServer("/assets/shaders/simple.vert");
-        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSrc);
+function initProgram(gl, vertexShaderSrc, fragShaderSrc) {
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSrc);
+    const fragShader = createShader(gl, gl.FRAGMENT_SHADER, fragShaderSrc);
 
-        const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
-        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSrc);
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragShader);
+    gl.linkProgram(program);
 
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program link error:', gl.getProgramInfoLog(program));
-            gl.deleteProgram(program);
-            return null;
-        }
-
-        return {
-            program: program,
-            attribLocations: {
-                a_vertex: gl.getAttribLocation(program, 'a_vertex'),
-                a_color: gl.getAttribLocation(program, 'a_color'),
-            }
-        };
-
-    } catch (error) {
-        console.error(`${error.name}: ${error.message}`)
-        return null
-
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
+        return null;
     }
+
+    return {
+        program: program,
+        attribLocations: {
+            a_vertex: gl.getAttribLocation(program, 'a_vertex'),
+            a_color: gl.getAttribLocation(program, 'a_color'),
+        },
+        uniformLocations: {
+            u_proj_matrix: gl.getUniformLocation(program, 'u_proj_matrix'),
+            u_mv_matrix: gl.getUniformLocation(program, 'u_mv_matrix')
+        }
+    };
 }

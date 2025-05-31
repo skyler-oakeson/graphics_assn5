@@ -76,10 +76,11 @@ MySample.main = (async function() {
         20, 21, 22, 20, 22, 23,   // left
     ]);
 
-    const programInfo = await initProgram(gl)
-    const buffers = initBuffers(gl, vertices, colors, indices)
+    const vertexShaderSrc = await loadFileFromServer("/assets/shaders/simple.vert");
+    const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
 
-    gl.useProgram(programInfo.program)
+    const programInfo = initProgram(gl, vertexShaderSrc, fragmentShaderSrc)
+    const buffers = initBuffers(gl, vertices, colors, indices)
 
     //------------------------------------------------------------------
     //
@@ -95,62 +96,9 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function render() {
-        gl.clearColor(
-            0.3921568627450980392156862745098,
-            0.58431372549019607843137254901961,
-            0.92941176470588235294117647058824,
-            1.0);
-        gl.clearDepth(1.0);
-        gl.depthFunc(gl.LEQUAL);
-        gl.enable(gl.DEPTH_TEST);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        setVertexAttribute(buffers, programInfo)
-        setColorAttribute(buffers, programInfo)
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index.buffer);
-
-        gl.drawElements(gl.TRIANGLES, 24, gl.UNSIGNED_SHORT, 0);
+        drawScene(gl, programInfo, buffers, {})
     }
 
-    function setVertexAttribute(buffers, programInfo) {
-        const components = 4;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = Float32Array.BYTES_PER_ELEMENT * 4;
-        const offset = 0;
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex.buffer);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.a_vertex,
-            components,
-            type,
-            normalize,
-            stride,
-            offset
-        );
-
-        gl.enableVertexAttribArray(programInfo.attribLocations.a_vertex)
-    }
-
-    function setColorAttribute(buffers, programInfo) {
-        const components = 4;
-        const type = gl.FLOAT;
-        const normalize = false;
-        const stride = Float32Array.BYTES_PER_ELEMENT * 4;
-        const offset = 0;
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color.buffer);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.a_color,
-            components,
-            type,
-            normalize,
-            stride,
-            offset
-        );
-
-        gl.enableVertexAttribArray(programInfo.attribLocations.a_color)
-    }
 
     //------------------------------------------------------------------
     //
