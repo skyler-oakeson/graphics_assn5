@@ -1,4 +1,4 @@
-MySample.main = (function() {
+MySample.main = (async function() {
     'use strict';
     const canvas = document.getElementById('canvas-main');
     const gl = canvas.getContext('webgl2');
@@ -8,130 +8,78 @@ MySample.main = (function() {
         return;
     }
 
-    function createShader(type, source) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
+    const fieldOfView = (45 * Math.PI) / 180; // in radians
+    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 100.0;
 
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error('Shader compile error:', gl.getShaderInfoLog(shader));
-            gl.deleteShader(shader);
-            return null;
-        }
+    const vertices = new Float32Array([
+        // Front face
+        -1.0, -1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0, 1.0,
 
-        return shader;
-    }
+        // Back face
+        -1.0, -1.0, -1.0, 1.0,
+        -1.0, 1.0, -1.0, 1.0,
+        1.0, 1.0, -1.0, 1.0,
+        1.0, -1.0, -1.0, 1.0,
 
-    function createProgram(vertexShader, fragmentShader) {
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
+        // Top face
+        -1.0, 1.0, -1.0, 1.0,
+        -1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0,
+        1.0, 1.0, -1.0, 1.0,
 
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program link error:', gl.getProgramInfoLog(program));
-            gl.deleteProgram(program);
-            return null;
-        }
+        // Bottom face
+        -1.0, -1.0, -1.0, 1.0,
+        1.0, -1.0, -1.0, 1.0,
+        1.0, -1.0, 1.0, 1.0,
+        -1.0, -1.0, 1.0, 1.0,
 
-        return program;
-    }
+        // Right face
+        1.0, -1.0, -1.0, 1.0,
+        1.0, 1.0, -1.0, 1.0,
+        1.0, 1.0, 1.0, 1.0,
+        1.0, -1.0, 1.0, 1.0,
 
-    function createBuffer(type, data, usage) {
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(type, buffer);
-        gl.bufferData(type, data, usage)
-        return buffer
-    }
-
-    // Triangle vertex positions (X, Y, Z)
-    var vertices = new Float32Array([
-        -1, -1, -1, 1,
-        1, -1, -1, 1,
-        1, 1, -1, 1,
-        -1, 1, -1, 1,
-        -1, -1, 1, 1,
-        1, -1, 1, 1,
-        1, 1, 1, 1,
-        -1, 1, 1, 1,
-        -1, -1, -1, 1,
-        -1, 1, -1, 1,
-        -1, 1, 1, 1,
-        -1, -1, 1, 1,
-        1, -1, -1, 1,
-        1, 1, -1, 1,
-        1, 1, 1, 1,
-        1, -1, 1, 1,
-        -1, -1, -1, 1,
-        -1, -1, 1, 1,
-        1, -1, 1, 1,
-        1, -1, -1, 1,
-        -1, 1, -1, 1,
-        -1, 1, 1, 1,
-        1, 1, 1, 1,
-        1, 1, -1, 1,
+        // Left face
+        -1.0, -1.0, -1.0, 1.0,
+        -1.0, -1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0, 1.0,
+        -1.0, 1.0, -1.0, 1.0,
     ]);
+
 
     var colors = new Float32Array([
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        // Face 1 (front)
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+        // Face 2 (back)
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+        // Face 3 (left)
+        0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+        // Face 4 (right)
+        1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+        // Face 5 (bottom)
+        1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1,
+        // Face 6 (top)
+        0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1
     ]);
 
-    var indices = new Uint16Array([
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        8, 9, 10, 8, 10, 11,
-        12, 13, 14, 12, 14, 15,
-        16, 17, 18, 16, 18, 19,
-        20, 21, 22, 20, 22, 23
+    const indices = new Uint16Array([
+        0, 1, 2, 0, 2, 3,    // front
+        4, 5, 6, 4, 6, 7,    // back
+        8, 9, 10, 8, 10, 11,   // top
+        12, 13, 14, 12, 14, 15,   // bottom
+        16, 17, 18, 16, 18, 19,   // right
+        20, 21, 22, 20, 22, 23,   // left
     ]);
 
+    const programInfo = await initProgram(gl)
+    const buffers = initBuffers(gl, vertices, colors, indices)
 
-
-
-    async function initializeShaders() {
-        try {
-            const vertexShaderSrc = await loadFileFromServer("/assets/shaders/simple.vert");
-            const vertexShader = createShader(gl.VERTEX_SHADER, vertexShaderSrc);
-
-            const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
-            const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentShaderSrc);
-
-            const program = createProgram(vertexShader, fragmentShader);
-
-
-            let vertexBuffer = createBuffer(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
-            let positionLoc = getAndEnableVertexAttribArrayLocation(program, 'a_position')
-            gl.vertexAttribPointer(positionLoc, 4, gl.FLOAT, false, vertices.BYTES_PER_ELEMENT * 4, 0)
-
-            let colorsBuffer = createBuffer(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
-            let colorLoc = getAndEnableVertexAttribArrayLocation(program, 'a_color')
-            gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, colors.BYTES_PER_ELEMENT * 3, 0)
-
-            let indexBuffer = createBuffer(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW)
-
-            gl.useProgram(program);
-
-        } catch (error) {
-            console.error(`${error.name}: ${error.message}`)
-        }
-    }
-
-    function getAndEnableVertexAttribArrayLocation(program, name) {
-        let location = gl.getAttribLocation(program, name);
-        if (location < 0) {
-            console.error(`Failed to get attrib location for ${name}`)
-        }
-        gl.enableVertexAttribArray(location);
-
-        return location
-    }
-
-
+    gl.useProgram(programInfo.program)
 
     //------------------------------------------------------------------
     //
@@ -157,7 +105,51 @@ MySample.main = (function() {
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+        setVertexAttribute(buffers, programInfo)
+        setColorAttribute(buffers, programInfo)
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index.buffer);
+
+        gl.drawElements(gl.TRIANGLES, 24, gl.UNSIGNED_SHORT, 0);
+    }
+
+    function setVertexAttribute(buffers, programInfo) {
+        const components = 4;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = Float32Array.BYTES_PER_ELEMENT * 4;
+        const offset = 0;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex.buffer);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.a_vertex,
+            components,
+            type,
+            normalize,
+            stride,
+            offset
+        );
+
+        gl.enableVertexAttribArray(programInfo.attribLocations.a_vertex)
+    }
+
+    function setColorAttribute(buffers, programInfo) {
+        const components = 4;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = Float32Array.BYTES_PER_ELEMENT * 4;
+        const offset = 0;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color.buffer);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.a_color,
+            components,
+            type,
+            normalize,
+            stride,
+            offset
+        );
+
+        gl.enableVertexAttribArray(programInfo.attribLocations.a_color)
     }
 
     //------------------------------------------------------------------
@@ -173,11 +165,6 @@ MySample.main = (function() {
         requestAnimationFrame(animationLoop);
     }
 
-    async function initialize() {
-        await initializeShaders()
-    }
-
-    initialize()
 
     console.log('initializing...');
     requestAnimationFrame(animationLoop);
