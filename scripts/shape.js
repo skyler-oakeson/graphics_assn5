@@ -1,7 +1,7 @@
 class Shape {
     constructor(gl, programInfo, vertices, colors, indices) {
         this.numIndices = indices.length
-        this.update = {
+        this.updated = {
             status: false,
             trigger: function() { this.status = true },
             reset: function() { this.status = false }
@@ -19,24 +19,24 @@ class Shape {
     }
 
     translate(x, y, z) {
-        this.update.trigger()
+        this.updated.trigger()
         this.translation = multiplyMatrix4x4(this.translation, translationMatrix(x, y, z));
     }
 
     scale(x, y, z) {
-        this.update.trigger()
+        this.updated.trigger()
         this.translation = multiplyMatrix4x4(this.scaling, scalingMatrix(x, y, z));
     }
 
     rotate(rad, plane) {
-        this.update.trigger()
+        this.updated.trigger()
         this.rotation = multiplyMatrix4x4(this.rotation, rotationMatrix(rad, plane))
     }
 
     update() {
         // only recomputes the world matrix if an update happens
-        if (this.update.status) {
-            this.update.reset()
+        if (this.updated.status) {
+            this.updated.reset()
             this.worldMatrix = worldMatrix(this.rotation, this.translation, this.scaling)
         }
     }

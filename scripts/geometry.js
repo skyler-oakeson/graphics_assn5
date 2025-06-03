@@ -92,7 +92,6 @@ const CUBE_INDICES = new Uint16Array([
 // Table geometry
 //
 //------------------------------------------------------------------
-
 const TABLE_VERTICES = new Float32Array([
     -10.0, 0.0, -10.0, 1.0,
     -10.0, 0.0, 10.0, 1.0,
@@ -130,6 +129,64 @@ const TRIANGLE_INDICES = new Uint16Array([
 ])
 
 
+//------------------------------------------------------------------
+//
+// Tetrahedron geometry
+//
+//------------------------------------------------------------------
+const TETRAHEDRON_VERTICES = new Float32Array([
+    // Face 1: Bottom face (red)
+    -1.0, -1.0, 1.0, 1.0,  // Front-left base
+    0.0, -1.0, -1.0, 1.0,  // Back base  
+    1.0, -1.0, 1.0, 1.0,   // Front-right base
 
+    // Face 2: Front face (green)
+    0.0, 1.0, 0.0, 1.0,    // Top vertex
+    -1.0, -1.0, 1.0, 1.0,  // Front-left base
+    1.0, -1.0, 1.0, 1.0,   // Front-right base
+
+    // Face 3: Left face (blue)
+    0.0, 1.0, 0.0, 1.0,    // Top vertex
+    0.0, -1.0, -1.0, 1.0,  // Back base
+    -1.0, -1.0, 1.0, 1.0,  // Front-left base
+
+    // Face 4: Right face (yellow)
+    0.0, 1.0, 0.0, 1.0,    // Top vertex  
+    1.0, -1.0, 1.0, 1.0,   // Front-right base
+    0.0, -1.0, -1.0, 1.0,  // Back base
+]);
+
+const TETRAHEDRON_COLORS = new Float32Array([
+    // Face 1: Bottom face - red
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+
+    // Face 2: Front face - green
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+
+    // Face 3: Left face - blue
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+
+    // Face 4: Right face - yellow
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
+]);
+
+const TETRAHEDRON_INDICES = new Uint16Array([
+    // Face 1: Bottom face
+    0, 1, 2,
+    // Face 2: Front face  
+    3, 4, 5,
+    // Face 3: Left face
+    6, 7, 8,
+    // Face 4: Right face
+    9, 10, 11,
+]);
 
 

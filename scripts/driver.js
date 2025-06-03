@@ -3,6 +3,11 @@ MySample.main = (async function() {
     const canvas = document.getElementById('canvas-main');
     const gl = canvas.getContext('webgl2');
 
+    const near = .1;
+    const far = 1000;
+    const viewport = gl.getParameter(gl.VIEWPORT);
+    const aspect = viewport[2] / viewport[3]; // width / height
+
     if (!gl) {
         console.error('WebGL2 not supported');
         return;
@@ -23,11 +28,6 @@ MySample.main = (async function() {
         console.error("Failed to compile WebGL program")
     }
 
-    const near = .1;
-    const far = 1000;
-    const viewport = gl.getParameter(gl.VIEWPORT);
-    const aspect = viewport[2] / viewport[3]; // width / height
-
 
     const TABLE_BUFFERS = {
         vertex: TABLE_VERTICES,
@@ -35,25 +35,26 @@ MySample.main = (async function() {
         index: createStaticIndexBuffer(gl, TABLE_INDICES)
     }
 
+
     const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    const triangle = new Shape(gl, programInfo, TABLE_VERTICES, TRIANGLE_COLORS, TRIANGLE_INDICES)
+    const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
     const table = new Shape(gl, programInfo, TABLE_VERTICES, TABLE_COLORS, TABLE_INDICES)
 
-    cube.scale(.5, .5, .5)
-    cube.rotate(.3, Plane.YZ)
-    cube.rotate(.3, Plane.XZ)
-    cube.rotate(.5, Plane.XY)
-    cube.translate(.2, .5, -5.888)
-
+    const shapes = [tetrahedron]
 
     //------------------------------------------------------------------
     //
     // Scene updates go here.
     //
     //------------------------------------------------------------------
-    function update() {
-        cube.update()
-        table.update()
+    function update(elapsed) {
+        tetrahedron.translate(0, 0, -.01)
+        tetrahedron.rotate(.02, Plane.XY)
+        tetrahedron.rotate(.03, Plane.YZ)
+        tetrahedron.rotate(.02, Plane.XY)
+        shapes.forEach((shape) => {
+            shape.update()
+        })
     }
 
     //------------------------------------------------------------------
@@ -73,11 +74,12 @@ MySample.main = (async function() {
         gl.depthFunc(gl.LEQUAL);
         gl.useProgram(programInfo.program)
 
-        let projViewMatrix = perspectiveProjection(90, aspect, near, far)
+        let projViewMatrix = perspectiveProjection(45, aspect, near, far)
         gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
 
-        cube.draw(gl, programInfo)
-        table.draw(gl, programInfo)
+        shapes.forEach((shape) => {
+            shape.draw(gl, programInfo)
+        })
     }
 
 
