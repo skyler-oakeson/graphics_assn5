@@ -10,7 +10,7 @@ MySample.main = (async function() {
     const fov = 90
 
     let perspective = perspectiveProjection(fov, aspect, near, far)
-    let orthographic = orthographicProjection(10, 10, near, far)
+    let orthographic = orthographicProjection(10, 10, aspect, near, far)
     let projViewMatrix = orthographic
 
     if (!gl) {

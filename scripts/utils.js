@@ -170,11 +170,11 @@ const rotationMatrix = function() {
 // Create an orthographic projection projection matrix 
 //
 //------------------------------------------------------------------
-function orthographicProjection(width, height, near, far) {
-    let left = -width;
-    let right = width;
-    let top = height
-    let bottom = -height
+function orthographicProjection(width, height, aspect, near, far) {
+    let left = -width * aspect;
+    let right = width * aspect;
+    let top = height * aspect;
+    let bottom = -height * aspect;
     let op = [
         2 / (right - left), 0, 0, -(right + left) / (right - left),
         0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
