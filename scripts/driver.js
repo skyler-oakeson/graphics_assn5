@@ -7,7 +7,7 @@ MySample.main = (async function() {
     const far = 1000;
     const viewport = gl.getParameter(gl.VIEWPORT);
     const aspect = viewport[2] / viewport[3]; // width / height
-    const fov = 45
+    const fov = 90
 
     let perspective = perspectiveProjection(fov, aspect, near, far)
     let orthographic = orthographicProjection(10, 10, near, far)
@@ -41,22 +41,17 @@ MySample.main = (async function() {
     }
 
 
-    const cube1 = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    cube1.translate(4, 1, -14)
-    cube1.rotate(45, 45, 0)
-    const cube2 = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    cube2.translate(4, 1, -14)
-    cube2.rotate(180, 0, 0)
+    const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
+    cube.translate(4, 1, -14)
+    cube.rotate(45, 45, 45)
 
     const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
-    tetrahedron.translate(-4, -1, -14)
+    tetrahedron.translate(-4, -3, -11)
 
     const octahedron = new Shape(gl, programInfo, OCTAHEDRON_VERTICES, OCTAHEDRON_COLORS, OCTAHEDRON_INDICES)
-    octahedron.translate(-4, 3, -11)
+    octahedron.translate(-4, 3, -7)
 
-    const shapes = [cube1, cube2, tetrahedron, octahedron]
-
-    var total = 0
+    const shapes = [cube, tetrahedron, octahedron]
 
     //------------------------------------------------------------------
     //
@@ -68,8 +63,7 @@ MySample.main = (async function() {
             projViewMatrix = perspective
         }
 
-        cube1.rotate(1, 0, 0)
-        cube2.rotate(1, 0, 0)
+        cube.rotate(1, 0, 0)
         tetrahedron.rotate(1, 1, 1)
         octahedron.rotate(3, 0, 1)
 
