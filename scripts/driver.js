@@ -41,16 +41,20 @@ MySample.main = (async function() {
     }
 
 
-    const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    cube.translate(4, 1, -4)
+    const cube1 = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
+    cube1.translate(4, 1, -14)
+    cube1.rotate(45, 45, 0)
+    const cube2 = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
+    cube2.translate(4, 1, -14)
+    cube2.rotate(180, 0, 0)
 
     const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
     tetrahedron.translate(-4, -1, -14)
 
     const octahedron = new Shape(gl, programInfo, OCTAHEDRON_VERTICES, OCTAHEDRON_COLORS, OCTAHEDRON_INDICES)
-    octahedron.translate(-4, 3, -14)
+    octahedron.translate(-4, 3, -11)
 
-    const shapes = [cube, tetrahedron, octahedron]
+    const shapes = [cube1, cube2, tetrahedron, octahedron]
 
     var total = 0
 
@@ -60,15 +64,17 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function update(elapsed) {
-        total += elapsed
-
-        if (total < 500) {
+        if (totalTime > 5000) {
             projViewMatrix = perspective
         }
 
+        cube1.rotate(1, 0, 0)
+        cube2.rotate(1, 0, 0)
+        tetrahedron.rotate(1, 1, 1)
+        octahedron.rotate(3, 0, 1)
+
         shapes.forEach((shape) => {
-            shape.rotate(1, 1, 0)
-            shape.update()
+            shape.update(elapsed)
         })
     }
 
@@ -100,14 +106,20 @@ MySample.main = (async function() {
     }
 
 
+    var prevTime = performance.now()
+    var totalTime = performance.now()
+
     //------------------------------------------------------------------
     //
     // This is the animation loop.
     //
     //------------------------------------------------------------------
     function animationLoop(time) {
+        const elapsed = time - prevTime
+        prevTime = time
+        totalTime = time
 
-        update();
+        update(elapsed);
         render();
 
         requestAnimationFrame(animationLoop);

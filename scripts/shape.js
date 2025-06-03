@@ -25,7 +25,7 @@ class Shape {
 
     scale(x, y, z) {
         this.updated.trigger()
-        this.translation = multiplyMatrix4x4(this.scaling, scalingMatrix(x, y, z));
+        this.scaling = multiplyMatrix4x4(this.scaling, scalingMatrix(x, y, z));
     }
 
     rotate(yaw, pitch, roll) {
