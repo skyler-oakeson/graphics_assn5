@@ -8,79 +8,43 @@ MySample.main = (async function() {
         return;
     }
 
-    const fieldOfView = (45 * Math.PI) / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-
-    const vertices = new Float32Array([
-        // Front face
-        -1.0, -1.0, 1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
-
-        // Back face
-        -1.0, -1.0, -1.0, 1.0,
-        -1.0, 1.0, -1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-        1.0, -1.0, -1.0, 1.0,
-
-        // Top face
-        -1.0, 1.0, -1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-
-        // Bottom face
-        -1.0, -1.0, -1.0, 1.0,
-        1.0, -1.0, -1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-        -1.0, -1.0, 1.0, 1.0,
-
-        // Right face
-        1.0, -1.0, -1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0,
-
-        // Left face
-        -1.0, -1.0, -1.0, 1.0,
-        -1.0, -1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0, 1.0,
-        -1.0, 1.0, -1.0, 1.0,
-    ]);
-
-
-    var colors = new Float32Array([
-        // Face 1 (front)
-        1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-        // Face 2 (back)
-        0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-        // Face 3 (left)
-        0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-        // Face 4 (right)
-        1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
-        // Face 5 (bottom)
-        1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1,
-        // Face 6 (top)
-        0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1
-    ]);
-
-    const indices = new Uint16Array([
-        0, 1, 2, 0, 2, 3,    // front
-        4, 5, 6, 4, 6, 7,    // back
-        8, 9, 10, 8, 10, 11,   // top
-        12, 13, 14, 12, 14, 15,   // bottom
-        16, 17, 18, 16, 18, 19,   // right
-        20, 21, 22, 20, 22, 23,   // left
-    ]);
-
     const vertexShaderSrc = await loadFileFromServer("/assets/shaders/simple.vert");
-    const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
+    if (!vertexShaderSrc) {
+        console.error("Unable to load vertex shader source")
+    }
 
-    const programInfo = initProgram(gl, vertexShaderSrc, fragmentShaderSrc)
-    const buffers = initBuffers(gl, vertices, colors, indices)
+    const fragmentShaderSrc = await loadFileFromServer("/assets/shaders/simple.frag")
+    if (!fragmentShaderSrc) {
+        console.error("Unable to load fragment shader source")
+    }
+
+    const programInfo = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
+    if (!programInfo || !programInfo.program) {
+        console.error("Failed to compile WebGL program")
+    }
+
+    const near = .1;
+    const far = 1000;
+    const viewport = gl.getParameter(gl.VIEWPORT);
+    const aspect = viewport[2] / viewport[3]; // width / height
+
+
+    const TABLE_BUFFERS = {
+        vertex: TABLE_VERTICES,
+        colors: createStaticVertexBuffer(gl, TABLE_COLORS),
+        index: createStaticIndexBuffer(gl, TABLE_INDICES)
+    }
+
+    const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
+    const triangle = new Shape(gl, programInfo, TABLE_VERTICES, TRIANGLE_COLORS, TRIANGLE_INDICES)
+    const table = new Shape(gl, programInfo, TABLE_VERTICES, TABLE_COLORS, TABLE_INDICES)
+
+    cube.scale(.5, .5, .5)
+    cube.rotate(.3, Plane.YZ)
+    cube.rotate(.3, Plane.XZ)
+    cube.rotate(.5, Plane.XY)
+    cube.translate(.2, .5, -5.888)
+
 
     //------------------------------------------------------------------
     //
@@ -88,6 +52,8 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function update() {
+        cube.update()
+        table.update()
     }
 
     //------------------------------------------------------------------
@@ -96,7 +62,22 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function render() {
-        drawScene(gl, programInfo, buffers, {})
+        gl.clearColor(
+            0.3921568627450980392156862745098,
+            0.58431372549019607843137254901961,
+            0.92941176470588235294117647058824,
+            1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.clearDepth(1.0);
+        gl.depthFunc(gl.LEQUAL);
+        gl.useProgram(programInfo.program)
+
+        let projViewMatrix = perspectiveProjection(90, aspect, near, far)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
+
+        cube.draw(gl, programInfo)
+        table.draw(gl, programInfo)
     }
 
 
