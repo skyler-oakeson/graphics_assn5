@@ -10,7 +10,8 @@ MySample.main = (async function() {
     const fov = 45
 
     let perspective = perspectiveProjection(fov, aspect, near, far)
-    let orthographic = orthographicProjection(aspect, near, far)
+    let orthographic = orthographicProjection(10, 10, near, far)
+    let projViewMatrix = orthographic
 
     if (!gl) {
         console.error('WebGL2 not supported');
@@ -41,8 +42,7 @@ MySample.main = (async function() {
 
 
     const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    cube.scale(.5, .5, .5)
-    cube.translate(4, 1, -14)
+    cube.translate(4, 1, -4)
 
     const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
     tetrahedron.translate(-4, -1, -14)
@@ -52,14 +52,22 @@ MySample.main = (async function() {
 
     const shapes = [cube, tetrahedron, octahedron]
 
+    var total = 0
+
     //------------------------------------------------------------------
     //
     // Scene updates go here.
     //
     //------------------------------------------------------------------
     function update(elapsed) {
+        total += elapsed
+
+        if (total < 500) {
+            projViewMatrix = perspective
+        }
+
         shapes.forEach((shape) => {
-            shape.rotate(1, 10, 3)
+            shape.rotate(1, 1, 0)
             shape.update()
         })
     }
@@ -84,7 +92,7 @@ MySample.main = (async function() {
 
         gl.useProgram(programInfo.program)
 
-        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, perspective)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
 
         shapes.forEach((shape) => {
             shape.draw(gl, programInfo)
