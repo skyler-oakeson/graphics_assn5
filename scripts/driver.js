@@ -34,13 +34,6 @@ MySample.main = (async function() {
     }
 
 
-    const TABLE_BUFFERS = {
-        vertex: TABLE_VERTICES,
-        colors: createStaticVertexBuffer(gl, TABLE_COLORS),
-        index: createStaticIndexBuffer(gl, TABLE_INDICES)
-    }
-
-
     const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
     cube.translate(4, 1, -14)
     cube.rotate(45, 45, 45)
