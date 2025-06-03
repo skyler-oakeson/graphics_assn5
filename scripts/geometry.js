@@ -136,31 +136,31 @@ const TRIANGLE_INDICES = new Uint16Array([
 //------------------------------------------------------------------
 const TETRAHEDRON_VERTICES = new Float32Array([
     // Face 1: Bottom face (red)
-    -1.0, -1.0, 1.0, 1.0,  // Front-left base
-    0.0, -1.0, -1.0, 1.0,  // Back base  
-    1.0, -1.0, 1.0, 1.0,   // Front-right base
+    -1.0, -1.0, 1.0, 1.0,
+    0.0, -1.0, -1.0, 1.0,
+    1.0, -1.0, 1.0, 1.0,
 
     // Face 2: Front face (green)
-    0.0, 1.0, 0.0, 1.0,    // Top vertex
-    -1.0, -1.0, 1.0, 1.0,  // Front-left base
-    1.0, -1.0, 1.0, 1.0,   // Front-right base
+    0.0, 1.0, 0.0, 1.0,
+    -1.0, -1.0, 1.0, 1.0,
+    1.0, -1.0, 1.0, 1.0,
 
     // Face 3: Left face (blue)
-    0.0, 1.0, 0.0, 1.0,    // Top vertex
-    0.0, -1.0, -1.0, 1.0,  // Back base
-    -1.0, -1.0, 1.0, 1.0,  // Front-left base
+    0.0, 1.0, 0.0, 1.0,
+    0.0, -1.0, -1.0, 1.0,
+    -1.0, -1.0, 1.0, 1.0,
 
     // Face 4: Right face (yellow)
-    0.0, 1.0, 0.0, 1.0,    // Top vertex  
-    1.0, -1.0, 1.0, 1.0,   // Front-right base
+    0.0, 1.0, 0.0, 1.0,
+    1.0, -1.0, 1.0, 1.0,
     0.0, -1.0, -1.0, 1.0,  // Back base
 ]);
 
 const TETRAHEDRON_COLORS = new Float32Array([
-    // Face 1: Bottom face - red
-    1.0, 0.0, 0.0, 1.0,
-    1.0, 0.0, 0.0, 1.0,
-    1.0, 0.0, 0.0, 1.0,
+    // Face 1: Right face - red
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
 
     // Face 2: Front face - green
     0.0, 1.0, 0.0, 1.0,
@@ -172,10 +172,10 @@ const TETRAHEDRON_COLORS = new Float32Array([
     0.0, 0.0, 1.0, 1.0,
     0.0, 0.0, 1.0, 1.0,
 
-    // Face 4: Right face - yellow
-    1.0, 1.0, 0.0, 1.0,
-    1.0, 1.0, 0.0, 1.0,
-    1.0, 1.0, 0.0, 1.0,
+    // Face 4: Bottom face - yellow
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
 ]);
 
 const TETRAHEDRON_INDICES = new Uint16Array([
@@ -189,4 +189,114 @@ const TETRAHEDRON_INDICES = new Uint16Array([
     9, 10, 11,
 ]);
 
+//------------------------------------------------------------------
+//
+// Octahedron geometry
+//
+//------------------------------------------------------------------
 
+
+const OCTAHEDRON_VERTICES = new Float32Array([
+    // Face 1: top-right-front (red)
+    0.0, 1.0, 0.0, 1.0,   // top
+    1.0, 0.0, 0.0, 1.0,   // right
+    0.0, 0.0, 1.0, 1.0,   // front
+
+    // Face 2: top-front-left (green)
+    0.0, 1.0, 0.0, 1.0,   // top
+    0.0, 0.0, 1.0, 1.0,   // front
+    -1.0, 0.0, 0.0, 1.0,  // left
+
+    // Face 3: top-left-back (blue)
+    0.0, 1.0, 0.0, 1.0,   // top
+    -1.0, 0.0, 0.0, 1.0,  // left
+    0.0, 0.0, -1.0, 1.0,  // back
+
+    // Face 4: top-back-right (yellow)
+    0.0, 1.0, 0.0, 1.0,   // top
+    0.0, 0.0, -1.0, 1.0,  // back
+    1.0, 0.0, 0.0, 1.0,   // right
+
+    // Face 5: bottom-front-right (cyan)
+    0.0, -1.0, 0.0, 1.0,  // bottom
+    0.0, 0.0, 1.0, 1.0,   // front
+    1.0, 0.0, 0.0, 1.0,   // right
+
+    // Face 6: bottom-left-front (magenta)
+    0.0, -1.0, 0.0, 1.0,  // bottom
+    -1.0, 0.0, 0.0, 1.0,  // left
+    0.0, 0.0, 1.0, 1.0,   // front
+
+    // Face 7: bottom-back-left (orange)
+    0.0, -1.0, 0.0, 1.0,  // bottom
+    0.0, 0.0, -1.0, 1.0,  // back
+    -1.0, 0.0, 0.0, 1.0,  // left
+
+    // Face 8: bottom-right-back (purple)
+    0.0, -1.0, 0.0, 1.0,  // bottom
+    1.0, 0.0, 0.0, 1.0,   // right
+    0.0, 0.0, -1.0, 1.0,  // back
+]);
+
+// Each set of 3 vertices gets the same color for solid faces
+const OCTAHEDRON_COLORS = new Float32Array([
+    // Face 1: red
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+
+    // Face 2: green
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+
+    // Face 3: blue
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+
+    // Face 4: yellow
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 0.0, 1.0,
+
+    // Face 5: cyan
+    0.0, 1.0, 1.0, 1.0,
+    0.0, 1.0, 1.0, 1.0,
+    0.0, 1.0, 1.0, 1.0,
+
+    // Face 6: magenta
+    1.0, 0.0, 1.0, 1.0,
+    1.0, 0.0, 1.0, 1.0,
+    1.0, 0.0, 1.0, 1.0,
+
+    // Face 7: orange
+    1.0, 0.5, 0.0, 1.0,
+    1.0, 0.5, 0.0, 1.0,
+    1.0, 0.5, 0.0, 1.0,
+
+    // Face 8: purple
+    0.5, 0.0, 1.0, 1.0,
+    0.5, 0.0, 1.0, 1.0,
+    0.5, 0.0, 1.0, 1.0,
+]);
+
+// Simple sequential indices since each face has its own vertices
+const OCTAHEDRON_INDICES = new Uint16Array([
+    // Face 1
+    0, 1, 2,
+    // Face 2  
+    3, 4, 5,
+    // Face 3
+    6, 7, 8,
+    // Face 4
+    9, 10, 11,
+    // Face 5
+    12, 13, 14,
+    // Face 6
+    15, 16, 17,
+    // Face 7
+    18, 19, 20,
+    // Face 8
+    21, 22, 23,
+]);

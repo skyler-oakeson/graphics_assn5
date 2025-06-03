@@ -102,10 +102,10 @@ function translationMatrix(dx, dy, dz) {
     return transposeMatrix4x4(t)
 }
 
-const Plane = Object.freeze({
-    XY: "xy",
-    YZ: "yz",
-    XZ: "xz",
+const AXIS = Object.freeze({
+    Z: "xy",
+    X: "yz",
+    Y: "xz",
 })
 
 const toDegrees = (rad) => {
@@ -132,48 +132,35 @@ const rotationMatrix = function() {
         cos.push(Math.cos(toRadians(i)))
     }
 
-    return function(theta, plane) {
-        let degrees = Math.trunc(toDegrees(theta))
-        let res = [];
+    return function(yaw, pitch, roll) {
 
-        switch (plane) {
-            case Plane.XY:
-                res = [
-                    cos[degrees], -sin[degrees], 0, 0,
-                    sin[degrees], cos[degrees], 0, 0,
-                    0, 0, 1, 0,
-                    0, 0, 0, 1,
-                ];
-                break;
-            case Plane.YZ:
-                res = [
-                    1, 0, 0, 0,
-                    0, cos[degrees], -sin[degrees], 0,
-                    0, sin[degrees], cos[degrees], 0,
-                    0, 0, 0, 1,
-                ];
-                break;
-            case Plane.XZ:
-                res = [
-                    cos[degrees], 0, sin[degrees], 0,
-                    0, 1, 0, 0,
-                    -sin[degrees], 0, cos[degrees], 0,
-                    0, 0, 0, 1
-                ];
-                break;
-            default:
-                let p0 = plane.p0
-                let p1 = plane.p1
-                // TODO implement a way to do arbitrary rotation
-                res = [
-                    cos[degrees], 0, sin[degrees], 0,
-                    0, 1, 0, 0,
-                    -sin[degrees], 0, cos[degrees], 0,
-                    0, 0, 0, 1
-                ];
-                break;
-        }
-        return transposeMatrix4x4(new Float32Array(res))
+        // x, y, z = aplha, beta, gamma
+        yaw = yaw % 360
+        pitch = pitch % 360
+        roll = roll % 360
+
+        gamma = [
+            cos[roll], -sin[roll], 0, 0,
+            sin[roll], cos[roll], 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ];
+
+        beta = [
+            1, 0, 0, 0,
+            0, cos[pitch], -sin[pitch], 0,
+            0, sin[pitch], cos[pitch], 0,
+            0, 0, 0, 1,
+        ];
+
+        alpha = [
+            cos[yaw], 0, sin[yaw], 0,
+            0, 1, 0, 0,
+            -sin[yaw], 0, cos[yaw], 0,
+            0, 0, 0, 1
+        ];
+
+        return transposeMatrix4x4(multiply3Matrix4x4(gamma, beta, alpha))
     }
 }()
 
@@ -183,7 +170,7 @@ const rotationMatrix = function() {
 // Create an orthographic projection projection matrix 
 //
 //------------------------------------------------------------------
-function orthographicProjection(aspect, near, far, size = 3) {
+function orthographicProjection(aspect, near, far, size = 1) {
     const left = -size * aspect;
     const right = size * aspect;
     const bottom = -size;
@@ -229,8 +216,8 @@ function perspectiveProjection(fovy, aspect, near, far) {
 // Helper function to create a single matrix capable of rotation, translation, and scaling
 //
 //------------------------------------------------------------------
-function worldMatrix(rotation, translation, scale) {
-    return multiplyMatrix4x4(rotation, multiplyMatrix4x4(translation, scale))
+function multiply3Matrix4x4(x, y, z) {
+    return multiplyMatrix4x4(x, multiplyMatrix4x4(y, z))
 }
 
 const IDENTITY_MATRIX = transposeMatrix4x4(new Float32Array([

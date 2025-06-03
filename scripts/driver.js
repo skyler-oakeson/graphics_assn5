@@ -7,6 +7,10 @@ MySample.main = (async function() {
     const far = 1000;
     const viewport = gl.getParameter(gl.VIEWPORT);
     const aspect = viewport[2] / viewport[3]; // width / height
+    const fov = 45
+
+    let perspective = perspectiveProjection(fov, aspect, near, far)
+    let orthographic = orthographicProjection(aspect, near, far)
 
     if (!gl) {
         console.error('WebGL2 not supported');
@@ -37,10 +41,16 @@ MySample.main = (async function() {
 
 
     const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
-    const table = new Shape(gl, programInfo, TABLE_VERTICES, TABLE_COLORS, TABLE_INDICES)
+    cube.scale(.5, .5, .5)
+    cube.translate(4, 1, -14)
 
-    const shapes = [tetrahedron]
+    const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
+    tetrahedron.translate(-4, -1, -14)
+
+    const octahedron = new Shape(gl, programInfo, OCTAHEDRON_VERTICES, OCTAHEDRON_COLORS, OCTAHEDRON_INDICES)
+    octahedron.translate(-4, 3, -14)
+
+    const shapes = [cube, tetrahedron, octahedron]
 
     //------------------------------------------------------------------
     //
@@ -48,11 +58,8 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function update(elapsed) {
-        tetrahedron.translate(0, 0, -.01)
-        tetrahedron.rotate(.02, Plane.XY)
-        tetrahedron.rotate(.03, Plane.YZ)
-        tetrahedron.rotate(.02, Plane.XY)
         shapes.forEach((shape) => {
+            shape.rotate(1, 10, 3)
             shape.update()
         })
     }
@@ -63,19 +70,21 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function render() {
-        gl.clearColor(
-            0.3921568627450980392156862745098,
-            0.58431372549019607843137254901961,
-            0.92941176470588235294117647058824,
-            1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
+        gl.clearColor(0, 0, 0, 1.0);
         gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // enable depth
+        gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
+
+        // enable blending -- this will help when you try to make something transparent
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
         gl.useProgram(programInfo.program)
 
-        let projViewMatrix = perspectiveProjection(45, aspect, near, far)
-        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, perspective)
 
         shapes.forEach((shape) => {
             shape.draw(gl, programInfo)
