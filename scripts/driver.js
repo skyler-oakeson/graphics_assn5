@@ -83,6 +83,10 @@ MySample.main = (async function() {
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+        // enable culling backfaces
+        gl.enable(gl.CULL_FACE)
+        gl.enable(gl.BACK)
+
         gl.useProgram(programInfo.program)
 
         gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
