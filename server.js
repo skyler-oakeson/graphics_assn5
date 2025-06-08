@@ -7,7 +7,8 @@ const mimeTypes = {
     '.frag': 'text/plain',
     '.js': 'text/javascript',
     '.html': 'text/html',
-    '.css': 'text/css'
+    '.css': 'text/css',
+    '.ply': 'text/ply'
 };
 
 const port = 3000;
@@ -22,7 +23,7 @@ async function handleRequest(request, response) {
         // Check if file exists and is readable
         await fs.access(file, fs.constants.R_OK);
         console.log(`${lookup} is there`);
-        
+
         try {
             // Read the file
             const data = await fs.readFile(file);
@@ -41,6 +42,6 @@ async function handleRequest(request, response) {
     }
 }
 
-http.createServer(handleRequest).listen(port, function () {
+http.createServer(handleRequest).listen(port, function() {
     console.log(`Server is listening on port ${port}`);
 });
