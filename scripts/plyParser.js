@@ -51,40 +51,10 @@ function parsePly(file) {
 
     while (pointer < tokens.length) {
         let tok = consume(tokens)
-        switch (tok) {
-            case "format":
-                break;
-            case "element":
-                element(tokens)
-                break;
-            case "end_header":
-                end_header(tokens)
-                break;
-            case "property":
-                property(tokens)
-                break;
-            case "comment":
-                comment(tokens)
-                break;
+        if (KEYWORDS[tok]) {
+            KEYWORDS[tok](tokens)
         }
     }
-}
-
-function format(tokens) {
-    let tok = consume(tokens)
-    switch (tok) {
-        case "ascii":
-            consume(tokens)
-            break;
-        case "binary_big_endian":
-        case "binary_little_endian":
-            console.error("Binary not supported.")
-            break;
-    }
-}
-
-function end_header(tokens) {
-    parseElements(tokens)
 }
 
 function parseElements(tokens) {
@@ -131,9 +101,14 @@ function element(tokens) {
 }
 
 function consume(tokens) {
-    let old = pointer
+    let prev = pointer
     pointer++
-    return tokens[old]
+    return tokens[prev]
+}
+
+function next(tokens) {
+    let next = pointer + 1
+    return tokens[next]
 }
 
 function property(tokens) {
@@ -164,13 +139,28 @@ function property(tokens) {
     }
 }
 
-function comment(tokens) {
-    while (!KEYWORDS[tokens[pointer + 1]]) {
-        consume(tokens)
+function format(tokens) {
+    let tok = consume(tokens)
+    switch (tok) {
+        case "ascii":
+            consume(tokens)
+            break;
+        case "binary_big_endian":
+        case "binary_little_endian":
+            console.error("Binary not supported.")
+            break;
     }
 }
 
+function end_header(tokens) {
+    parseElements(tokens)
+}
 
+function comment(tokens) {
+    while (!KEYWORDS[next(tokens)]) {
+        consume(tokens)
+    }
+}
 
 let test = async function() {
     let file = await loadFileFromServer('assets/models/cube.ply')
