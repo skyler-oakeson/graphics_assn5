@@ -30,7 +30,8 @@ const CONVERSION = {
 
 
 function tokenize(file) {
-    const tokens = file.split(/[\n, ' ']/)
+    const tokens = file.split(/[\n, ' ']/).filter(Boolean)
+    console.log(tokens)
     return tokens;
 }
 
@@ -40,7 +41,6 @@ let currElem = -1
 let propertyIndex = 0
 let fileformat = ""
 let data = {}
-
 
 function parsePly(file) {
     let tokens = tokenize(file)
@@ -55,11 +55,12 @@ function parsePly(file) {
             KEYWORDS[tok](tokens)
         }
     }
+
+    return data
 }
 
 function parseElements(tokens) {
-    console.log(elements)
-    for (let e = 0; e <= element.length; e++) {
+    for (let e = 0; e < element.length; e++) {
         let element = elements[e]
 
         // Initialize data object
@@ -69,26 +70,25 @@ function parseElements(tokens) {
         }
 
         // Fill all properties on data object
-        for (let i = 0; i < element.count * element.properties.length; i++) {
+        for (let i = 0; i < element.properties.length * element.count; i++) {
             let propIndex = i % element.properties.length
             let prop = element.properties[propIndex];
-            let name = element.properties[propIndex].name;
-            let type = element.properties[propIndex].type;
+            let name = prop.name;
+            let type = prop.type;
 
             if (type == "LIST") {
                 let count = CONVERSION[prop.countType](consume(tokens))
-                let list = []
+                let face = []
                 for (let l = 0; l < count; l++) {
-                    let attr = CONVERSION[prop.valueType](consume(tokens))
-                    list.push(attr)
+                    let tok = consume(tokens)
+                    let vert = CONVERSION[prop.valueType](tok)
+                    list.push(vert)
                 }
-                data[name].push(list)
+                data[name].push(face)
             } else {
                 data[name].push(CONVERSION[type](consume(tokens)))
             }
         }
-
-        console.log(data)
     }
 }
 
@@ -163,8 +163,8 @@ function comment(tokens) {
 }
 
 let test = async function() {
-    let file = await loadFileFromServer('assets/models/cube.ply')
-    parsePly(file)
+    let file = await loadFileFromServer('assets/models/bun_zipper.ply')
+    console.log(parsePly(file))
 }()
 
 
