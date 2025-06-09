@@ -219,6 +219,10 @@ function multiply3Matrix4x4(x, y, z) {
     return multiplyMatrix4x4(x, multiplyMatrix4x4(y, z))
 }
 
+function computeNormals(vertices, faces) {
+
+}
+
 const IDENTITY_MATRIX = transposeMatrix4x4(new Float32Array([
     1, 0, 0, 0,
     0, 1, 0, 0,
