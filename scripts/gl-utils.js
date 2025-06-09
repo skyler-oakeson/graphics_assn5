@@ -84,14 +84,19 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
         console.error("Unable to find a_color location.")
     }
 
-    let u_proj_view_matrix = gl.getUniformLocation(program, 'u_proj_view_matrix')
-    if (!u_proj_view_matrix) {
-        console.error("Unable to find u_proj_view_matrix location.")
+    let u_proj_matrix = gl.getUniformLocation(program, 'u_proj_matrix')
+    if (!u_proj_matrix) {
+        console.error("Unable to find u_proj_matrix location.")
     }
 
-    let u_world_matrix = gl.getUniformLocation(program, 'u_world_matrix')
-    if (!u_world_matrix) {
-        console.error("Unable to find u_world_matrix location.")
+    let u_view_matrix = gl.getUniformLocation(program, 'u_view_matrix')
+    if (!u_view_matrix) {
+        console.error("Unable to find u_view_matrix location.")
+    }
+
+    let u_model_matrix = gl.getUniformLocation(program, 'u_model_matrix')
+    if (!u_model_matrix) {
+        console.error("Unable to find u_model_matrix location.")
     }
 
     return {
@@ -101,8 +106,9 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
             a_color: a_color
         },
         uniloc: {
-            u_proj_view_matrix: u_proj_view_matrix,
-            u_world_matrix: u_world_matrix,
+            u_proj_matrix: u_proj_matrix,
+            u_view_matrix: u_view_matrix,
+            u_model_matrix: u_model_matrix,
         }
     };
 }

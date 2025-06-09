@@ -1,170 +1,113 @@
-const KEYWORDS = {
-    format: format,
-    element: element,
-    property: property,
-    end_header: end_header,
-    comment: comment,
-}
+function parsePlyData(data) {
+    const lines = data.split('\n');
 
-const TYPE_ALIAS = {
-    char: "UINT8",
-    uchar: "UINT8",
-    short: "INT8",
-    ushort: "UINT8",
-    int: "INT32",
-    uint: "UINT32",
-    float: "FLOAT32",
-    double: "FLOAT64",
-    list: "LIST",
-}
+    let expectedFaces = null;
+    let expectedVertices = null;
 
-const CONVERSION = {
-    "UINT8": parseInt,
-    "INT8": parseInt,
-    "UINT8": parseInt,
-    "INT32": parseInt,
-    "UINT32": parseInt,
-    "FLOAT32": parseFloat,
-    "FLOAT64": parseFloat,
-}
+    const vertices = [];
+    const faces = [];
+    const colors = [];
 
+    let vertexCount = 0;
+    let facesCount = 0;
 
-function tokenize(file) {
-    const tokens = file.split(/[\n, ' ']/).filter(Boolean)
-    console.log(tokens)
-    return tokens;
-}
+    let property_red = 0
+    let property_blue = 0
+    let property_green = 0
 
-let pointer = 0;
-let elements = []
-let currElem = -1
-let propertyIndex = 0
-let fileformat = ""
-let data = {}
+    for (let x = 0; x < lines.length; x++) {
+        const line = lines[x].trim();
 
-function parsePly(file) {
-    let tokens = tokenize(file)
-
-    if (consume(tokens) != "ply") {
-        console.error("Missing keyword ply.")
-    }
-
-    while (pointer < tokens.length) {
-        let tok = consume(tokens)
-        if (KEYWORDS[tok]) {
-            KEYWORDS[tok](tokens)
-        }
-    }
-
-    return data
-}
-
-function parseElements(tokens) {
-    for (let e = 0; e < element.length; e++) {
-        let element = elements[e]
-
-        // Initialize data object
-        for (let p = 0; p < element.properties.length; p++) {
-            let prop = element.properties[p]
-            data[prop.name] = []
+        if (!line || line === '') {
+            continue;
         }
 
-        // Fill all properties on data object
-        for (let i = 0; i < element.properties.length * element.count; i++) {
-            let propIndex = i % element.properties.length
-            let prop = element.properties[propIndex];
-            let name = prop.name;
-            let type = prop.type;
+        if (line.startsWith("format")) {
+            const fileFormat = line.trim().split(' ')[1];
+            if (fileFormat.toLowerCase() !== "ascii") {
+                console.error(`File format is not ascii. ${fileFormat} format not supported.`);
+            }
+        }
 
-            if (type == "LIST") {
-                let count = CONVERSION[prop.countType](consume(tokens))
-                let face = []
-                for (let l = 0; l < count; l++) {
-                    let tok = consume(tokens)
-                    let vert = CONVERSION[prop.valueType](tok)
-                    list.push(vert)
-                }
-                data[name].push(face)
+        if (line.startsWith("comment")) {
+            continue;
+        }
+
+        if (line.includes("element vertex")) {
+            expectedVertices = parseInt(line.match(/^element\s+vertex\s+(\d+)/)[1]);
+            continue
+        }
+
+        if (line.includes("property uchar red")) {
+            property_red = 1
+            continue
+        }
+
+        if (line.includes("property uchar green")) {
+            property_green = 1
+            continue
+        }
+
+        if (line.includes("property uchar blue")) {
+            property_blue = 1
+            continue
+        }
+
+        if (line.includes("element face")) {
+            expectedFaces = parseInt(line.match(/^element\s+face\s+(\d+)/)[1]);
+        }
+
+        if (line.includes("end_header")) {
+            continue;
+        }
+
+        if (line.match(/^([-|\d]+(\.\d+)?)\s+([-|\d]+(\.\d+)?)\s+([-|\d]+(\.\d+)?)/) && vertexCount !== expectedVertices) {
+            vertexCount += 1;
+
+            if ((property_red === 1) && (property_green === 1) && (property_blue === 1)) {
+                const vertex = line.trim().split(/\s+/).slice(0, 6)
+                vertices.push([parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2])]);
+                colors.push([parseFloat(vertex[3]), parseFloat(vertex[4]), parseFloat(vertex[5])]);
+
             } else {
-                data[name].push(CONVERSION[type](consume(tokens)))
+                const vertex = line.trim().split(/\s+/).slice(0, 3)
+                vertices.push([parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2])]);
+            }
+
+        }
+
+        if (line.match(/^[34]\s+\d+\s+\d+\s\d+/) && facesCount !== expectedFaces) {
+            facesCount += 1;
+
+            if (line[0].startsWith('3')) {
+                const face = line.trim().split(/\s+/).slice(1, 4)
+                faces.push([parseInt(face[0]), parseInt(face[1]), parseInt(face[2])]);
+            } else if (line[0].startsWith('4')) {
+                const face = line.trim().split(/\s+/).slice(1, 5)
+                faces.push([parseInt(face[0]), parseInt(face[1]), parseInt(face[2]), parseInt(face[3])]);
             }
         }
     }
-}
 
-function element(tokens) {
-    let name = consume(tokens)
-    let count = parseInt(consume(tokens))
-    currElem++
-    propertyIndex = 0
-    elements.push({ name: name, count: count, properties: [] })
-}
-
-function consume(tokens) {
-    let prev = pointer
-    pointer++
-    return tokens[prev]
-}
-
-function next(tokens) {
-    let next = pointer + 1
-    return tokens[next]
-}
-
-function property(tokens) {
-    let tok = consume(tokens)
-    switch (tok) {
-        case "char":
-        case "uchar":
-        case "short":
-        case "ushort":
-        case "int":
-        case "uint":
-        case "float":
-        case "double":
-            let type = TYPE_ALIAS[tok]
-            let name = consume(tokens)
-            elements[currElem]["properties"][propertyIndex] = { type: type, name: name }
-            propertyIndex++
-            break;
-        case "list":
-            let countType = TYPE_ALIAS[consume(tokens)]
-            let valueType = TYPE_ALIAS[consume(tokens)]
-            let listName = consume(tokens)
-            elements[currElem]["properties"][propertyIndex] = { type: "LIST", name: listName, countType: countType, valueType: valueType }
-            break;
-        default:
-            console.error("Invalid property type")
-            break;
+    if (vertices.length !== expectedVertices) {
+        console.log(`Error: total vertices read: ${vertices.length} does not match expected vertices: ${expectedVertices}`);
+        throw new Error(`Error: total vertices read: ${vertices.length} does not match expected vertices: ${expectedVertices}`);
     }
-}
 
-function format(tokens) {
-    let tok = consume(tokens)
-    switch (tok) {
-        case "ascii":
-            consume(tokens)
-            break;
-        case "binary_big_endian":
-        case "binary_little_endian":
-            console.error("Binary not supported.")
-            break;
+    if (faces.length !== expectedFaces) {
+        console.log(`Error: total faces read: ${faces.length} does not match expected faces: ${expectedFaces}`);
+        throw new Error(`Error: total faces read: ${faces.length} does not match expected faces: ${expectedFaces}`);
     }
-}
 
-function end_header(tokens) {
-    parseElements(tokens)
-}
+    let data = {}
+    data.vertices = vertices
+    data.faces = faces
+    data.colors = colors
 
-function comment(tokens) {
-    while (!KEYWORDS[next(tokens)]) {
-        consume(tokens)
-    }
+    return data;
 }
 
 let test = async function() {
     let file = await loadFileFromServer('assets/models/bun_zipper.ply')
-    console.log(parsePly(file))
+    console.log(parsePlyData(file))
 }()
-
-
