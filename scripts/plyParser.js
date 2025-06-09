@@ -1,5 +1,5 @@
-function parsePlyData(data) {
-    const lines = data.split('\n');
+function parsePly(ply) {
+    const lines = ply.split('\n');
 
     let expectedFaces = null;
     let expectedVertices = null;
@@ -66,12 +66,12 @@ function parsePlyData(data) {
 
             if ((property_red === 1) && (property_green === 1) && (property_blue === 1)) {
                 const vertex = line.trim().split(/\s+/).slice(0, 6)
-                vertices.push([parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2])]);
-                colors.push([parseFloat(vertex[3]), parseFloat(vertex[4]), parseFloat(vertex[5])]);
+                vertices.push(parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2]));
+                colors.push(parseFloat(vertex[3]), parseFloat(vertex[4]), parseFloat(vertex[5]));
 
             } else {
                 const vertex = line.trim().split(/\s+/).slice(0, 3)
-                vertices.push([parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2])]);
+                vertices.push(parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2]));
             }
 
         }
@@ -81,33 +81,31 @@ function parsePlyData(data) {
 
             if (line[0].startsWith('3')) {
                 const face = line.trim().split(/\s+/).slice(1, 4)
-                faces.push([parseInt(face[0]), parseInt(face[1]), parseInt(face[2])]);
+                faces.push(parseInt(face[0]), parseInt(face[1]), parseInt(face[2]));
             } else if (line[0].startsWith('4')) {
                 const face = line.trim().split(/\s+/).slice(1, 5)
-                faces.push([parseInt(face[0]), parseInt(face[1]), parseInt(face[2]), parseInt(face[3])]);
+                faces.push(parseInt(face[0]), parseInt(face[1]), parseInt(face[2]), parseInt(face[3]));
             }
         }
     }
 
-    if (vertices.length !== expectedVertices) {
-        console.log(`Error: total vertices read: ${vertices.length} does not match expected vertices: ${expectedVertices}`);
-        throw new Error(`Error: total vertices read: ${vertices.length} does not match expected vertices: ${expectedVertices}`);
+    if (vertexCount !== expectedVertices) {
+        console.error(`Error: vertices read: ${vertexCount}, expected vertices: ${expectedVertices}`);
     }
 
-    if (faces.length !== expectedFaces) {
-        console.log(`Error: total faces read: ${faces.length} does not match expected faces: ${expectedFaces}`);
-        throw new Error(`Error: total faces read: ${faces.length} does not match expected faces: ${expectedFaces}`);
+    if (facesCount !== expectedFaces) {
+        console.log(`Error: faces read: ${facesCount}, expected faces: ${expectedFaces}`);
     }
 
     let data = {}
-    data.vertices = vertices
-    data.faces = faces
-    data.colors = colors
+    data.vertices = new Float32Array(vertices)
+    data.faces = new Uint16Array(faces)
+    data.colors = new Float32Array(colors)
 
     return data;
 }
 
 let test = async function() {
     let file = await loadFileFromServer('assets/models/bun_zipper.ply')
-    console.log(parsePlyData(file))
+    console.log(parsePly(file))
 }()
