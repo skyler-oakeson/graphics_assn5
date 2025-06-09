@@ -1,19 +1,15 @@
+const VERTEX_OFFSET = 3
+const FACE_OFFSET = 3
+
 function parsePly(ply) {
     const lines = ply.split('\n');
 
     let expectedFaces = null;
     let expectedVertices = null;
 
-    const vertices = [];
-    const faces = [];
+    let vertices = [];
+    const indices = [];
     const colors = [];
-
-    let vertexCount = 0;
-    let facesCount = 0;
-
-    let property_red = 0
-    let property_blue = 0
-    let property_green = 0
 
     let endHeader = 0;
 
@@ -46,21 +42,6 @@ function parsePly(ply) {
             continue
         }
 
-        if (line.includes("property uchar red")) {
-            property_red = 1
-            continue
-        }
-
-        if (line.includes("property uchar green")) {
-            property_green = 1
-            continue
-        }
-
-        if (line.includes("property uchar blue")) {
-            property_blue = 1
-            continue
-        }
-
         if (line.includes("element face")) {
             expectedFaces = parseInt(line.match(/^element\s+face\s+(\d+)/)[1]);
         }
@@ -69,35 +50,39 @@ function parsePly(ply) {
     //parse vertex
     for (let i = endHeader + 1; i <= endHeader + expectedVertices; i++) {
         const line = lines[i].trim();
+        const vertex = line.trim().split(/\s+/).slice(0, 3)
+        const x = parseFloat(vertex[0])
+        const y = parseFloat(vertex[1])
+        const z = parseFloat(vertex[2])
+        vertices.push(x, y, z);
 
-        if ((property_red === 1) && (property_green === 1) && (property_blue === 1)) {
-            const vertex = line.trim().split(/\s+/).slice(0, 6)
-            vertices.push(parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2]));
-            colors.push(parseFloat(vertex[3]), parseFloat(vertex[4]), parseFloat(vertex[5]));
-
-        } else {
-            const vertex = line.trim().split(/\s+/).slice(0, 3)
-            vertices.push(parseFloat(vertex[0]), parseFloat(vertex[1]), parseFloat(vertex[2]));
-        }
+        // assign random colors
+        colors.push(Math.random(), Math.random(), Math.random(), 1.0);
     }
 
     // parse faces
     for (let i = endHeader + expectedVertices + 1; i < lines.length; i++) {
         const line = lines[i].trim();
-
         if (line.startsWith('3')) {
             const face = line.trim().split(/\s+/).slice(1, 4)
-            faces.push(parseInt(face[0]), parseInt(face[1]), parseInt(face[2]));
+            indices.push(parseInt(face[0]), parseInt(face[1]), parseInt(face[2]));
         } else if (line.startsWith('4')) {
-            const face = line.trim().split(/\s+/).slice(1, 5)
-            faces.push(parseInt(face[0]), parseInt(face[1]), parseInt(face[2]), parseInt(face[3]));
+            const face = line.trim().split(/\s+/).slice(1, 5);
+            const v0 = parseInt(face[0]);
+            const v1 = parseInt(face[1]);
+            const v2 = parseInt(face[2]);
+            const v3 = parseInt(face[3]);
+            indices.push(v0, v1, v2);
+            indices.push(v0, v2, v3);
         }
     }
 
+    vertices = convertToUnitSpace(vertices)
+    let normals = calculateNormals(vertices, indices)
+
     let data = {}
-    convertToUnitSpace(vertices)
     data.vertices = new Float32Array(vertices)
-    data.faces = new Uint16Array(faces)
+    data.indices = new Uint16Array(indices)
     data.colors = new Float32Array(colors)
 
     return data;
@@ -111,10 +96,14 @@ function convertToUnitSpace(vertices) {
             max = cord
         }
     }
-    console.log(max)
+
+    let scale = 1.0 / max;
+    for (let i = 0; i < vertices.length; i++) {
+        vertices[i] *= scale
+    }
+
+    return vertices
 }
 
-let test = async function() {
-    let file = await loadFileFromServer('assets/models/bun_zipper.ply')
-    console.log(parsePly(file))
-}()
+function calculateNormals(vertices, indices) {
+}

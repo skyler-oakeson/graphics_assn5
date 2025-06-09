@@ -10,8 +10,6 @@ MySample.main = (async function() {
     const fov = 90
 
     let perspective = perspectiveProjection(fov, aspect, near, far)
-    let orthographic = orthographicProjection(10, 10, aspect, near, far)
-    let projViewMatrix = orthographic
 
     if (!gl) {
         console.error('WebGL2 not supported');
@@ -33,18 +31,16 @@ MySample.main = (async function() {
         console.error("Failed to compile WebGL program")
     }
 
+    const cube = await loadModelFromServer(gl, programInfo, "assets/models/cube.ply")
+    cube.translate(0, 0, -10)
+    cube.scale(3, 3, 3)
 
-    const cube = new Shape(gl, programInfo, CUBE_VERTICES, CUBE_COLORS, CUBE_INDICES)
-    cube.translate(4, 1, -14)
-    cube.rotate(45, 45, 45)
+    const dragon = await loadModelFromServer(gl, programInfo, "assets/models/dragon_vrip.ply")
+    const rabbit = await loadModelFromServer(gl, programInfo, "assets/models/bun_zipper.ply")
+    rabbit.scale(2, 2, 2)
+    rabbit.translate(0, 0, -3)
 
-    const tetrahedron = new Shape(gl, programInfo, TETRAHEDRON_VERTICES, TETRAHEDRON_COLORS, TETRAHEDRON_INDICES)
-    tetrahedron.translate(-4, -3, -11)
-
-    const octahedron = new Shape(gl, programInfo, OCTAHEDRON_VERTICES, OCTAHEDRON_COLORS, OCTAHEDRON_INDICES)
-    octahedron.translate(-4, 3, -7)
-
-    const shapes = [cube, tetrahedron, octahedron]
+    const models = [cube]
 
     //------------------------------------------------------------------
     //
@@ -52,16 +48,10 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function update(elapsed) {
-        if (totalTime > 5000) {
-            projViewMatrix = perspective
-        }
-
         cube.rotate(1, 0, 0)
-        tetrahedron.rotate(1, 1, 1)
-        octahedron.rotate(3, 0, 1)
-
-        shapes.forEach((shape) => {
-            shape.update(elapsed)
+        rabbit.rotate(1, 0, 0)
+        models.forEach((model) => {
+            model.update(elapsed)
         })
     }
 
@@ -89,10 +79,11 @@ MySample.main = (async function() {
 
         gl.useProgram(programInfo.program)
 
-        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_view_matrix, false, projViewMatrix)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_proj_matrix, false, perspective)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_view_matrix, false, IDENTITY_MATRIX)
 
-        shapes.forEach((shape) => {
-            shape.draw(gl, programInfo)
+        models.forEach((model) => {
+            model.draw(gl, programInfo)
         })
     }
 

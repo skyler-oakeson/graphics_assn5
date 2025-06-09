@@ -1,4 +1,4 @@
-class Shape {
+class Model {
     constructor(gl, programInfo, vertices, colors, indices) {
         this.numIndices = indices.length
         this.updated = {
@@ -9,7 +9,7 @@ class Shape {
         this.scaling = IDENTITY_MATRIX
         this.translation = IDENTITY_MATRIX
         this.rotation = IDENTITY_MATRIX
-        this.worldMatrix = multiply3Matrix4x4(this.rotation, this.translation, this.scaling)
+        this.modelMatrix = multiply3Matrix4x4(this.rotation, this.translation, this.scaling)
         this.buffers = {
             vertex: createStaticVertexBuffer(gl, vertices),
             colors: createStaticVertexBuffer(gl, colors),
@@ -37,16 +37,20 @@ class Shape {
         // only recomputes the world matrix if an update happens
         if (this.updated.status) {
             this.updated.reset()
-            this.worldMatrix = multiply3Matrix4x4(this.rotation, this.translation, this.scaling)
+            this.modelMatrix = multiply3Matrix4x4(this.rotation, this.translation, this.scaling)
         }
     }
 
     draw(gl, programInfo) {
         gl.bindVertexArray(this.vao);
-        gl.uniformMatrix4fv(programInfo.uniloc.u_world_matrix, false, this.worldMatrix)
+        gl.uniformMatrix4fv(programInfo.uniloc.u_model_matrix, false, this.modelMatrix)
         gl.disable(gl.CULL_FACE)
         gl.drawElements(gl.TRIANGLES, this.numIndices, gl.UNSIGNED_SHORT, 0);
         gl.enable(gl.CULL_FACE)
         gl.bindVertexArray(null);
     }
+}
+
+async function loadModel(url) {
+
 }

@@ -8,6 +8,21 @@ async function loadFileFromServer(filename) {
     return result.text();
 }
 
+
+//------------------------------------------------------------------
+//
+// Helper function used to load and parse a ply into a Model
+//
+//------------------------------------------------------------------
+async function loadModelFromServer(gl, programInfo, filename) {
+    const ply = await loadFileFromServer(filename)
+    const parsed = parsePly(ply)
+
+    const model = new Model(gl, programInfo, parsed.vertices, parsed.colors, parsed.indices)
+    return model
+}
+
+
 //------------------------------------------------------------------
 //
 // Helper function to multiply two 4x4 matrices.

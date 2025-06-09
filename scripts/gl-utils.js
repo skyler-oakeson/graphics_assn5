@@ -46,7 +46,7 @@ function create3dPosColorVao(
 
     gl.enableVertexAttribArray(programInfo.attribloc.a_vertex);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
-    gl.vertexAttribPointer(programInfo.attribloc.a_vertex, 4, gl.FLOAT, false, 0, 0)
+    gl.vertexAttribPointer(programInfo.attribloc.a_vertex, 3, gl.FLOAT, false, 0, 0)
 
     gl.enableVertexAttribArray(programInfo.attribloc.a_color);
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colors);
