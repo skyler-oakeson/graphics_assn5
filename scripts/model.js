@@ -6,6 +6,7 @@ class Model {
             trigger: function() { this.status = true },
             reset: function() { this.status = false }
         }
+        console.log(indices)
         this.scaling = IDENTITY_MATRIX
         this.translation = IDENTITY_MATRIX
         this.rotation = IDENTITY_MATRIX
@@ -47,7 +48,7 @@ class Model {
         gl.bindVertexArray(this.vao);
         gl.uniformMatrix4fv(programInfo.uniloc.u_model_matrix, false, this.modelMatrix)
 
-        gl.drawElements(gl.TRIANGLES, this.numIndices, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, this.numIndices, gl.UNSIGNED_INT, 0);
 
         gl.bindVertexArray(null);
     }

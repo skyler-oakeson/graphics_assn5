@@ -59,18 +59,37 @@ MySample.main = (async function() {
     // Model code
     //
     //------------------------------------------------------------------
-    // const cube = await loadModelFromServer(gl, programInfo, "assets/models/cube.ply")
-    // cube.translate(0, 0, -5)
-    // cube.rotate(0, 0, 0)
 
-    // const dragon = await loadModelFromServer(gl, programInfo, "assets/models/dragon_vrip.ply")
-    //
-    const rabbit = await loadModelFromServer(gl, programInfo, "assets/models/bun_zipper.ply")
-    rabbit.translate(0, -.5, -4)
-    rabbit.scale(2, 2, 1)
+    const dragon = await loadModelFromServer(gl, programInfo, "assets/models/dragon_vrip.ply")
+    dragon.translate(0, -.5, -2)
 
-    const models = [rabbit]
+    // const model = await loadModelFromServer(gl, programInfo, "assets/models/cube.ply")
 
+    const bunny = await loadModelFromServer(gl, programInfo, "assets/models/bun_zipper.ply")
+    bunny.translate(0, -.5, -2)
+
+    const l1 = {
+        pos: new Float32Array([4, 9, 3, 1]),
+        color: new Float32Array([1, 1, 1, 1])
+    }
+
+    const l2 = {
+        pos: new Float32Array([4, -9, 3, 1]),
+        color: new Float32Array([1, 0, 0, 1])
+    }
+
+    let light = l1;
+
+    function turnOffLight() {
+        light["prev"] = light.color;
+        light.color = new Float32Array([0, 0, 0, 0]);
+    }
+
+    function turnOnLight() {
+        light.color = light.prev;
+    }
+
+    const models = [bunny]
 
     //------------------------------------------------------------------
     //
@@ -78,8 +97,14 @@ MySample.main = (async function() {
     //
     //------------------------------------------------------------------
     function update(elapsed) {
-        rabbit.rotate(-1, 0, 0)
+        if (totalTime > 5000) {
+            models.pop()
+            models.push(dragon)
+            light = l2;
+        }
+
         models.forEach((model) => {
+            model.rotate(1, 0, 0)
             model.update(elapsed)
         })
     }
@@ -94,6 +119,9 @@ MySample.main = (async function() {
 
         gl.uniformMatrix4fv(programInfo.uniloc.u_proj_matrix, false, perspective)
         gl.uniformMatrix4fv(programInfo.uniloc.u_view_matrix, false, IDENTITY_MATRIX)
+
+        gl.uniform4fv(programInfo.uniloc.u_light_pos, light.pos)
+        gl.uniform4fv(programInfo.uniloc.u_light_color, light.color)
 
         models.forEach((model) => {
             model.draw(gl, programInfo)

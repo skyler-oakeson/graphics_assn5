@@ -90,7 +90,22 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
 
     let a_normal = gl.getAttribLocation(program, 'a_normal')
     if (a_normal < 0) {
-        console.error("Unable to find a_norm location.")
+        console.error("Unable to find a_normal location.")
+    }
+
+    let u_light_pos = gl.getUniformLocation(program, 'u_light_pos')
+    if (u_light_pos < 0) {
+        console.error("Unable to find u_norm location.")
+    }
+
+    let u_light_color = gl.getUniformLocation(program, 'u_light_color')
+    if (u_light_color < 0) {
+        console.error("Unable to find u_light_color location.")
+    }
+
+    let u_ambient = gl.getUniformLocation(program, 'u_ambient')
+    if (u_ambient < 0) {
+        console.error("Unable to find u_ambient location.")
     }
 
     let u_proj_matrix = gl.getUniformLocation(program, 'u_proj_matrix')
@@ -119,6 +134,9 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
             u_proj_matrix: u_proj_matrix,
             u_view_matrix: u_view_matrix,
             u_model_matrix: u_model_matrix,
+            u_light_pos: u_light_pos,
+            u_light_color: u_light_color,
+            u_ambient: u_ambient,
         }
     };
 }

@@ -63,7 +63,7 @@ function parsePly(ply) {
         vertices.push(x, y, z);
 
         // assign random colors
-        colors.push(.2, .2, 1.0, 1.0);
+        colors.push(1.0, 1.0, 1.0, 1.0);
     }
 
     // parse faces
@@ -85,7 +85,7 @@ function parsePly(ply) {
 
     let data = {}
     data.vertices = new Float32Array(convertToUnitSpace(vertices))
-    data.indices = new Uint16Array(indices)
+    data.indices = new Uint32Array(indices)
     data.colors = new Float32Array(colors)
 
     return data;
