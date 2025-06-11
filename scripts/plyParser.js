@@ -1,6 +1,12 @@
 const VERTEX_OFFSET = 3
 const FACE_OFFSET = 3
 
+
+//------------------------------------------------------------------
+//
+// Parses a ply file
+//
+//------------------------------------------------------------------
 function parsePly(ply) {
     const lines = ply.split('\n');
 
@@ -57,7 +63,7 @@ function parsePly(ply) {
         vertices.push(x, y, z);
 
         // assign random colors
-        colors.push(Math.random(), Math.random(), Math.random(), 1.0);
+        colors.push(.2, .2, 1.0, 1.0);
     }
 
     // parse faces
@@ -77,11 +83,8 @@ function parsePly(ply) {
         }
     }
 
-    vertices = convertToUnitSpace(vertices)
-    let normals = calculateNormals(vertices, indices)
-
     let data = {}
-    data.vertices = new Float32Array(vertices)
+    data.vertices = new Float32Array(convertToUnitSpace(vertices))
     data.indices = new Uint16Array(indices)
     data.colors = new Float32Array(colors)
 
@@ -105,5 +108,3 @@ function convertToUnitSpace(vertices) {
     return vertices
 }
 
-function calculateNormals(vertices, indices) {
-}

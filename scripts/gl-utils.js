@@ -52,6 +52,10 @@ function create3dPosColorVao(
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.colors);
     gl.vertexAttribPointer(programInfo.attribloc.a_color, 4, gl.FLOAT, false, 0, 0)
 
+    gl.enableVertexAttribArray(programInfo.attribloc.a_normal);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normals);
+    gl.vertexAttribPointer(programInfo.attribloc.a_normal, 3, gl.FLOAT, false, 0, 0)
+
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.index)
     gl.bindVertexArray(null)
 
@@ -84,6 +88,11 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
         console.error("Unable to find a_color location.")
     }
 
+    let a_normal = gl.getAttribLocation(program, 'a_normal')
+    if (a_normal < 0) {
+        console.error("Unable to find a_norm location.")
+    }
+
     let u_proj_matrix = gl.getUniformLocation(program, 'u_proj_matrix')
     if (!u_proj_matrix) {
         console.error("Unable to find u_proj_matrix location.")
@@ -103,7 +112,8 @@ function createProgram(gl, vertexShaderSrc, fragShaderSrc) {
         program: program,
         attribloc: {
             a_vertex: a_vertex,
-            a_color: a_color
+            a_normal: a_normal,
+            a_color: a_color,
         },
         uniloc: {
             u_proj_matrix: u_proj_matrix,

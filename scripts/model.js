@@ -10,10 +10,12 @@ class Model {
         this.translation = IDENTITY_MATRIX
         this.rotation = IDENTITY_MATRIX
         this.modelMatrix = multiply3Matrix4x4(this.rotation, this.translation, this.scaling)
+        let normals = calculateVertexNormals(vertices, indices)
         this.buffers = {
             vertex: createStaticVertexBuffer(gl, vertices),
             colors: createStaticVertexBuffer(gl, colors),
-            index: createStaticIndexBuffer(gl, indices)
+            normals: createStaticVertexBuffer(gl, normals),
+            index: createStaticIndexBuffer(gl, indices),
         }
         this.vao = create3dPosColorVao(gl, programInfo, this.buffers)
     }
