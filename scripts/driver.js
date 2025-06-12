@@ -66,15 +66,15 @@ MySample.main = (async function() {
     // const model = await loadModelFromServer(gl, programInfo, "assets/models/cube.ply")
 
     const bunny = await loadModelFromServer(gl, programInfo, "assets/models/bun_zipper.ply")
-    bunny.translate(0, -.5, -2)
+    bunny.translate(0, -.5, -3)
 
     const l1 = {
-        pos: new Float32Array([4, 9, 3, 1]),
+        pos: new Float32Array([0, 0, 0, 1]),
         color: new Float32Array([1, 1, 1, 1])
     }
 
     const l2 = {
-        pos: new Float32Array([4, -9, 3, 1]),
+        pos: new Float32Array([0, -.3, .3, 1]),
         color: new Float32Array([1, 0, 0, 1])
     }
 
